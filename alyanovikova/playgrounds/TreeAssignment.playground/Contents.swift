@@ -17,9 +17,9 @@ struct Node {
     self.children = childValues.map({ Node(value: $0)})
   }
 
-  init(value: Int, childNodes: Node...) {
+  init(value: Int, children: Node...) {
     self.value = value
-    self.children = childNodes
+    self.children = children
   }
 
 }
@@ -60,7 +60,7 @@ extension Node {
 
 let middle1 = Node(value: 5, childValues: 13, 16)
 let middle2 = Node(value: 7, childValues: 24)
-let tree = Node(value: 1, childNodes: middle1, middle2)
+let tree = Node(value: 1, children: middle1, middle2)
 
 //Use the tree to find first object and filter objects that satisfy the conditions:
 // element is > 12, > 0, > 50, == 4, == 13, < 15.
