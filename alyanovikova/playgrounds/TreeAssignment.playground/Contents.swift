@@ -29,12 +29,12 @@ extension Node {
   /*1. Write a function that goes through the tree and returns the first element which satisfies the condition. If no element found, return nil;
    condition is expressed by closure (Int) -> Bool
    */
-  func satisfyFirst(condition: (Int) -> Bool) -> Node? {
-    if (condition(self.value)) {
+  func firstSatisfying(condition: (Int) -> Bool) -> Node? {
+    if condition(value) {
       return self
     }
-    for child in self.children {
-      if let ans = child.satisfyFirst(condition: condition) {
+    for child in children {
+      if let ans = child.firstSatisfying(condition: condition) {
         return ans
       }
     }
@@ -44,13 +44,13 @@ extension Node {
   /*2. Write a filter function that goes through the tree and returns an array of all elements which satisfy the condition. If no element found, return empty array;
    condition is expressed by closure (Int) -> Bool
    */
-  func satisfy(condition: (Int) -> Bool) -> [Node] {
-    var ans: [Node] = []
-    if (condition(self.value)) {
-      ans.append(self)
+  func nodesSatisfying(condition: (Int) -> Bool) -> [Node] {
+    var nodes: [Node] = []
+    if condition(value) {
+      nodes.append(self)
     }
-    self.children.forEach { ans += $0.satisfy(condition: condition) }
-    return ans
+    children.forEach { nodes += $0.nodesSatisfying(condition: condition) }
+    return nodes
   }
 }
 
@@ -66,12 +66,12 @@ let tree = Node(value: 1, childNodes: middle1, middle2)
 // element is > 12, > 0, > 50, == 4, == 13, < 15.
 
 func test(condition: (Int) -> Bool) -> Void {
-  if let elem = tree.satisfyFirst(condition: condition) {
+  if let elem = tree.firstSatisfying(condition: condition) {
     print("first element: ", elem.value)
   }
 
   var elems: [Int] = []
-  tree.satisfy(condition: condition).forEach {elems.append($0.value)}
+  tree.nodesSatisfying(condition: condition).forEach {elems.append($0.value)}
   print("elements: ", elems)
   print()
 }

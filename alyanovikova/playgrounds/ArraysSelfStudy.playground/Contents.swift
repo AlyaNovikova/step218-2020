@@ -52,29 +52,21 @@ class Classroom {
   private var students: [Student] = []
 
   func add(student: Student) {
-    //  TODO: implement insert to the end of the students
-    self.students.append(student)
+    students.append(student)
   }
 
   func student(with name: String) -> Student? {
-    //  TODO: iterate through and find first student with specified name
-    for i in students {
-      if (i.name == name) {
-        return i
-      }
-    }
-    return nil
+    return students.first(where: { $0.name == name })
   }
 
   func students(of group: Student.Group) -> [Student] {
-    //  TODO: find all students with specified group
-    var res: [Student] = []
-    for i in students {
-      if (i.group == group) {
-        res.append(i)
+    var groupOfStudents: [Student] = []
+    for student in students {
+      if (student.group == group) {
+        groupOfStudents.append(student)
       }
     }
-    return res
+    return groupOfStudents
   }
 }
 
