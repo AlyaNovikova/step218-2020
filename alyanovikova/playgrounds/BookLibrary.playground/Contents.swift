@@ -41,6 +41,7 @@ class Book {
     if let index = bookmarks.firstIndex(of: bookmark) {
       bookmarks.remove(at: index)
     }
+    bookmark.book = nil
   }
 }
 

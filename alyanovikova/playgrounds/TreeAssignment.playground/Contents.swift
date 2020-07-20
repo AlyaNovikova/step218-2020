@@ -34,8 +34,8 @@ extension Node {
       return self
     }
     for child in children {
-      if let ans = child.firstSatisfying(condition: condition) {
-        return ans
+      if let satisfyingChild = child.firstSatisfying(condition: condition) {
+        return satisfyingChild
       }
     }
     return nil
@@ -64,32 +64,33 @@ let tree = Node(value: 1, children: middle1, middle2)
 
 //Use the tree to find first object and filter objects that satisfy the conditions:
 // element is > 12, > 0, > 50, == 4, == 13, < 15.
+extension Node {
+  func test(condition: (Int) -> Bool) -> Void {
+    if let elem = firstSatisfying(condition: condition) {
+      print("first element: ", elem.value)
+    }
 
-func test(condition: (Int) -> Bool) -> Void {
-  if let elem = tree.firstSatisfying(condition: condition) {
-    print("first element: ", elem.value)
+    var elems: [Int] = []
+    nodesSatisfying(condition: condition).forEach {elems.append($0.value)}
+    print("elements: ", elems)
+    print()
   }
-
-  var elems: [Int] = []
-  tree.nodesSatisfying(condition: condition).forEach {elems.append($0.value)}
-  print("elements: ", elems)
-  print()
 }
 
 print("> 12")
-test(condition: {$0 > 12})
+tree.test(condition: {$0 > 12})
 
 print("> 0")
-test(condition: {$0 > 0})
+tree.test(condition: {$0 > 0})
 
 print("> 50")
-test(condition: {$0 > 50})
+tree.test(condition: {$0 > 50})
 
 print("< 15")
-test(condition: {$0 < 15})
+tree.test(condition: {$0 < 15})
 
 print("== 4")
-test(condition: {$0 == 4})
+tree.test(condition: {$0 == 4})
 
 print("== 13")
-test(condition: {$0 == 13})
+tree.test(condition: {$0 == 13})
