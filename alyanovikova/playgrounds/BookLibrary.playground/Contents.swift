@@ -42,7 +42,6 @@ class Book {
       bookmarks.remove(at: index)
       bookmark.book = nil
     }
-    bookmark.book = nil
   }
 }
 
