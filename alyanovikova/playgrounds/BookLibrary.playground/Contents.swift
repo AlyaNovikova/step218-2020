@@ -40,8 +40,8 @@ class Book {
   func delete(bookmark: Bookmark) {
     if let index = bookmarks.firstIndex(of: bookmark) {
       bookmarks.remove(at: index)
+      bookmark.book = nil
     }
-    bookmark.book = nil
   }
 }
 
