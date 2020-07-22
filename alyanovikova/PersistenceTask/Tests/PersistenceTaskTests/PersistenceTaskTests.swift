@@ -18,7 +18,8 @@ final class PersistenceTaskTests: XCTestCase {
     }
   }
 
-  func testTodoList() throws {
+  func testReadingFromFile() throws {
+    try FileManager.default.removeItem(at: fileURL)
     do {
       let todos = [Todo(todo: "take a walk with dogs"), Todo(todo: "learn swift"), Todo(todo: "call mum")]
 
@@ -26,36 +27,42 @@ final class PersistenceTaskTests: XCTestCase {
       let data = try jsonEncoder.encode(todos)
 
       try data.write(to: fileURL)
-
-      let todoList = try TodoList()
-
-      XCTAssert(FileManager.default.fileExists(atPath: fileURL.path))
-      XCTAssert(todoList.todos.count == 3)
     } catch {
       XCTFail("Test failed with \(error)")
-
     }
+
+    let todoList = try TodoList()
+
+    XCTAssert(FileManager.default.fileExists(atPath: fileURL.path))
+    XCTAssert(todoList.todos.count == 3)
+    XCTAssert(todoList.todos[0].todo == "take a walk with dogs" && todoList.todos[0].isCompleted == false)
+    XCTAssert(todoList.todos[1].todo == "learn swift" && todoList.todos[0].isCompleted == false)
+    XCTAssert(todoList.todos[2].todo == "call mum" && todoList.todos[0].isCompleted == false)
+  }
+
+  func testWritingToFile() throws {
+    try FileManager.default.removeItem(at: fileURL)
     do {
       let todoList = try TodoList()
-
       try todoList.add(todo: Todo(todo: "get some sleep"))
-      try todoList.changeStatus(of: 0, newStatus: true)
+      try todoList.add(todo: Todo(todo: "buy curd snack"))
+      let _ = try todoList.changeStatus(of: 0, newStatus: true)
     } catch {
       XCTFail("Test failed with \(error)")
     }
 
-    do {
-      let todoList = try TodoList()
+    let data = try Data(contentsOf: fileURL)
 
-      XCTAssert(todoList.todos.count == 4)
-      XCTAssert(todoList.todos[0].isCompleted == true)
-      XCTAssert(todoList.todos[1].isCompleted == false)
-    } catch {
-      XCTFail("Test failed with \(error)")
-    }
+    let jsonDecoder = JSONDecoder()
+    let todos = try jsonDecoder.decode([Todo].self, from: data)
+
+    XCTAssert(todos.count == 2)
+    XCTAssert(todos[0].todo == "get some sleep" && todos[0].isCompleted == true)
+    XCTAssert(todos[1].todo == "buy curd snack" && todos[1].isCompleted == false)
   }
 
   static var allTests = [
-    ("testTodoList", testTodoList),
+    ("testWritingToFile", testWritingToFile),
+    ("testReadingFromFile", testReadingFromFile),
   ]
 }

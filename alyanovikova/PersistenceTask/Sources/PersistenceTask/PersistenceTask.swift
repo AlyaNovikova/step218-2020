@@ -44,12 +44,18 @@ class TodoList: Codable {
     try data.write(to: fileURL)
   }
 
-  func changeStatus(of index: Int, newStatus: Bool) throws {
+  func changeStatus(of index: Int, newStatus: Bool) throws -> Bool {
+    guard todos.indices.contains(index) else {
+      return false
+    }
+
     todos[index].isCompleted = newStatus
 
     let jsonEncoder = JSONEncoder()
     let data = try jsonEncoder.encode(todos)
 
     try data.write(to: fileURL)
+
+    return true
   }
 }
