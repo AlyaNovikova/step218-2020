@@ -1,61 +1,62 @@
 import Cocoa
 
-struct Todo: Codable {
-  let todo: String
-  var isCompleted: Bool
+public struct Todo: Codable {
+  public let todo: String
+  public var isCompleted: Bool
 
-  init(todo: String, isCompleted: Bool = false) {
+  public init(todo: String, isCompleted: Bool = false) {
     self.todo = todo
     self.isCompleted = isCompleted
   }
 }
 
-class TodoList: Codable {
-  var todos = [Todo]()
+public class TodoList: Codable {
+  public internal(set) var todos = [Todo]()
   private let fileURL: URL
 
-  init() throws {
-    let fileManager = FileManager.default
+  public init() throws {
+    fileURL = try Self.makeDefaultURL()
+    do {
+      todos = try [Todo](jsonFileURL: fileURL)
+    } catch CocoaError.fileReadNoSuchFile {
+      todos = []
+    }
+  }
 
-    let documentsDirectory = try fileManager.url(
+  public func add(todo: Todo) throws {
+    todos.append(todo)
+    try todos.writeJSON(to: fileURL)
+  }
+
+  public func changeStatus(of index: Int, newStatus: Bool) throws -> Bool {
+    guard todos.indices.contains(index) else {
+      return false
+    }
+    todos[index].isCompleted = newStatus
+    try todos.writeJSON(to: fileURL)
+    return true
+  }
+  
+  static func makeDefaultURL() throws -> URL {
+    let documentsDirectory = try FileManager.default.url(
       for: .documentDirectory,
       in: .userDomainMask,
       appropriateFor: nil,
       create: true)
-
-    fileURL = documentsDirectory.appendingPathComponent("TodoList")
-
-    if fileManager.fileExists(atPath: fileURL.path) {
-      let data = try Data(contentsOf: fileURL)
-
-      let jsonDecoder = JSONDecoder()
-      let todos = try jsonDecoder.decode([Todo].self, from: data)
-
-      self.todos = todos
-    }
+    return documentsDirectory.appendingPathComponent("TodoList")
   }
+}
 
-  func add(todo: Todo) throws {
-    todos.append(todo)
-
-    let jsonEncoder = JSONEncoder()
-    let data = try jsonEncoder.encode(todos)
-
+extension Encodable {
+  fileprivate func writeJSON(to fileURL: URL) throws {
+    let data = try JSONEncoder().encode(self)
     try data.write(to: fileURL)
   }
+}
 
-  func changeStatus(of index: Int, newStatus: Bool) throws -> Bool {
-    guard todos.indices.contains(index) else {
-      return false
-    }
-
-    todos[index].isCompleted = newStatus
-
-    let jsonEncoder = JSONEncoder()
-    let data = try jsonEncoder.encode(todos)
-
-    try data.write(to: fileURL)
-
-    return true
+extension Decodable {
+  fileprivate init(jsonFileURL: URL) throws {
+    let data = try Data(contentsOf: jsonFileURL)
+    self = try JSONDecoder().decode(Self.self, from: data)
   }
 }
