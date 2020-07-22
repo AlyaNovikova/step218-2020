@@ -1,32 +1,34 @@
-typealias Id = Int
+struct Contact {
+  typealias Id = Int
 
-class Contact {
+  let id: Id
   var name: String
-  var  surname: String
+  var surname: String
   var phone: String
 
-  init(name: String, surname: String, phone: String) {
+  init(id: Id, name: String, surname: String, phone: String) {
+    self.id = id
     self.name = name
     self.surname = surname
     self.phone = phone
   }
 }
 
-class Contacts {
-  var contacts = [Id: Contact]()
-  var counter: Id = 0
+class ContactBook {
+  public var contacts = [Contact.Id: Contact]()
+  private var counter: Contact.Id = 0
 
-  func createNewContact(name: String, surname: String, phone: String) -> Id {
+  func addContact(name: String, surname: String, phone: String) -> Contact {
     counter += 1
     let newId = counter
-    let newContact = Contact(name: name, surname: surname, phone: phone)
+    let newContact = Contact(id: newId, name: name, surname: surname, phone: phone)
     contacts[newId] = newContact
-    return newId
+    return newContact
   }
-
-  func updateContact(id: Id, name: String? = nil, surname: String? = nil, phone: String? = nil) -> Void {
-    guard let contact = contacts[id] else {
-      return
+  
+  func updateContact(id: Contact.Id, name: String? = nil, surname: String? = nil, phone: String? = nil) -> Bool {
+    guard var contact = contacts[id] else {
+      return false
     }
     if let name = name {
       contact.name = name
@@ -37,53 +39,51 @@ class Contacts {
     if let phone = phone {
       contact.phone = phone
     }
+    contacts[id] = contact
+    return true
   }
 
-  func updateContact(id: Id, newContact: Contact) -> Void {
-    if let _ = contacts[id] {
-      contacts[id] = newContact
+  func updateContact(id: Contact.Id, newContact: Contact) -> Bool {
+    guard let _ = contacts[id] else {
+      return false
     }
+    contacts[id] = newContact
+    return true
   }
 
-  func removeContact(id: Id) -> Void {
+  func removeContact(id: Contact.Id) {
     contacts.removeValue(forKey: id)
   }
 
-  func listContacts(where predicate: (Contact) -> Bool) -> [Id] {
-    var listContacts: [Id] = []
-    for (id, contact) in contacts {
-      if predicate(contact) {
-        listContacts.append(id)
-      }
-    }
-    return listContacts
+  func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
+    return contacts.values.filter( {predicate($0)} )
   }
 }
 
 enum ContactError: Error {
-  case NoContact
+  case noContact
 }
 
-var book = Contacts()
-let alya = book.createNewContact(name: "Alya", surname: "Nov", phone: "+7911")
-let julia = book.createNewContact(name: "Juliaaaaa", surname: "Sam", phone: "+3800")
-let ira = book.createNewContact(name: "Nil", surname: "Nil", phone: "Nil")
-let correctIra = Contact(name: "Ira", surname: "Hor", phone: "+3801")
+var book = ContactBook()
+let alya = book.addContact(name: "Alya", surname: "Nov", phone: "+7911")
+let julia = book.addContact(name: "Juliaaaaa", surname: "Sam", phone: "+3800")
+let ira = book.addContact(name: "Nil", surname: "Nil", phone: "Nil")
+let correctIra = Contact(id: ira.id, name: "Ira", surname: "Hor", phone: "+3801")
 
-guard let contactAlya = book.contacts[alya] else {
-  throw ContactError.NoContact
+guard let contactAlya = book.contacts[alya.id] else {
+  throw ContactError.noContact
 }
 assert(contactAlya.name == "Alya")
 
-book.updateContact(id: julia, name: "Julia")
-guard let contactJulia = book.contacts[julia] else {
-  throw ContactError.NoContact
+book.updateContact(id: julia.id, name: "Julia")
+guard let contactJulia = book.contacts[julia.id] else {
+  throw ContactError.noContact
 }
 assert(contactJulia.name == "Julia")
 
-book.updateContact(id: ira, newContact: correctIra)
-guard let contactIra = book.contacts[ira] else {
-  throw ContactError.NoContact
+book.updateContact(id: ira.id, newContact: correctIra)
+guard let contactIra = book.contacts[ira.id] else {
+  throw ContactError.noContact
 }
 assert(contactIra.name == "Ira")
 
@@ -94,8 +94,8 @@ assert(book.listContacts(where: {
   return $0.phone[$0.phone.startIndex] == "+"
 }).count == 3)
 
-book.removeContact(id: alya)
-assert(book.contacts[alya] == nil)
+book.removeContact(id: alya.id)
+assert(book.contacts[alya.id] == nil)
 assert(book.listContacts(where: {
   guard $0.phone.count > 0 else {
     return false
