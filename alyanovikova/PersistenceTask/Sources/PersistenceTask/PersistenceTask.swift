@@ -1,4 +1,4 @@
-import Cocoa
+import Foundation
 
 public struct Todo: Codable {
   public let todo: String
@@ -28,13 +28,12 @@ public class TodoList: Codable {
     try todos.writeJSON(to: fileURL)
   }
 
-  public func changeStatus(of index: Int, newStatus: Bool) throws -> Bool {
+  public func changeStatus(of index: Int, newStatus: Bool) throws {
     guard todos.indices.contains(index) else {
-      return false
+      return
     }
     todos[index].isCompleted = newStatus
     try todos.writeJSON(to: fileURL)
-    return true
   }
   
   static func makeDefaultURL() throws -> URL {

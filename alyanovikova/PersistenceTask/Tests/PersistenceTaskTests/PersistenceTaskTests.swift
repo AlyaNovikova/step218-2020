@@ -24,8 +24,6 @@ final class PersistenceTaskTests: XCTestCase {
       let data = try jsonEncoder.encode(todos)
       
       try data.write(to: fileURL)
-    } catch {
-      XCTFail("Test failed with \(error)")
     }
 
     // WHEN
@@ -33,10 +31,14 @@ final class PersistenceTaskTests: XCTestCase {
 
     // THEN
     XCTAssert(FileManager.default.fileExists(atPath: fileURL.path))
-    XCTAssert(todoList.todos.count == 3)
-    XCTAssert(todoList.todos[0].todo == "take a walk with dogs" && todoList.todos[0].isCompleted == false)
-    XCTAssert(todoList.todos[1].todo == "learn swift" && todoList.todos[0].isCompleted == false)
-    XCTAssert(todoList.todos[2].todo == "call mum" && todoList.todos[0].isCompleted == false)
+    XCTAssertEqual(todoList.todos.count, 3)
+    XCTAssertEqual(todoList.todos[0].todo, "take a walk with dogs")
+    XCTAssertEqual(todoList.todos[1].todo, "learn swift")
+    XCTAssertEqual(todoList.todos[2].todo, "call mum")
+
+    XCTAssertFalse(todoList.todos[0].isCompleted)
+    XCTAssertFalse(todoList.todos[1].isCompleted)
+    XCTAssertFalse(todoList.todos[2].isCompleted)
   }
   
   func testAddAndChangeStatus() throws {
@@ -46,8 +48,6 @@ final class PersistenceTaskTests: XCTestCase {
       try todoList.add(todo: Todo(todo: "get some sleep"))
       try todoList.add(todo: Todo(todo: "buy curd snack"))
       let _ = try todoList.changeStatus(of: 0, newStatus: true)
-    } catch {
-      XCTFail("Test failed with \(error)")
     }
 
     // THEN
@@ -56,8 +56,11 @@ final class PersistenceTaskTests: XCTestCase {
     let jsonDecoder = JSONDecoder()
     let todos = try jsonDecoder.decode([Todo].self, from: data)
     
-    XCTAssert(todos.count == 2)
-    XCTAssert(todos[0].todo == "get some sleep" && todos[0].isCompleted == true)
-    XCTAssert(todos[1].todo == "buy curd snack" && todos[1].isCompleted == false)
+    XCTAssertEqual(todos.count, 2)
+    XCTAssertEqual(todos[0].todo, "get some sleep")
+    XCTAssertEqual(todos[1].todo, "buy curd snack")
+
+    XCTAssertTrue(todos[0].isCompleted)
+    XCTAssertFalse(todos[1].isCompleted)
   }
 }
