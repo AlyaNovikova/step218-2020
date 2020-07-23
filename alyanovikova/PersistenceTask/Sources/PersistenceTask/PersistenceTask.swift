@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Todo: Codable {
+public struct Todo: Equatable, Codable {
   public let todo: String
   public var isCompleted: Bool
 
@@ -28,11 +28,12 @@ public class TodoList: Codable {
     try todos.writeJSON(to: fileURL)
   }
 
-  public func changeStatus(of index: Int, newStatus: Bool) throws {
-    guard todos.indices.contains(index) else {
-      return
+  public func changeStatus(of item: Todo, newStatus: Bool) throws {
+    for i in todos.indices {
+      if item == todos[i] {
+        todos[i].isCompleted = newStatus
+      }
     }
-    todos[index].isCompleted = newStatus
     try todos.writeJSON(to: fileURL)
   }
   

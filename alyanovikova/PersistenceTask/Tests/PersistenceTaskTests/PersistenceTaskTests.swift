@@ -47,7 +47,7 @@ final class PersistenceTaskTests: XCTestCase {
       let todoList = try TodoList()
       try todoList.add(todo: Todo(todo: "get some sleep"))
       try todoList.add(todo: Todo(todo: "buy curd snack"))
-      let _ = try todoList.changeStatus(of: 0, newStatus: true)
+      try todoList.changeStatus(of: Todo(todo: "get some sleep"), newStatus: true)
     }
 
     // THEN
