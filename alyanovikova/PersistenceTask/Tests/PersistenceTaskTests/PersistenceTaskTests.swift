@@ -12,7 +12,7 @@ final class PersistenceTaskTests: XCTestCase {
   }
 
   func testInitialization() throws {
-     _ = try TodoList()
+    _ = try TodoList()
   }
   
   func testNotEmptyInitialization() throws {
