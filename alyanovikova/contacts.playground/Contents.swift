@@ -1,12 +1,12 @@
-struct Contact {
-  typealias Id = Int
+public struct Contact {
+  public typealias Id = Int
 
-  let id: Id
-  var name: String
-  var surname: String
-  var phone: String
+  public let id: Id
+  public var name: String
+  public var surname: String
+  public var phone: String
 
-  init(id: Id, name: String, surname: String, phone: String) {
+  public init(id: Id, name: String, surname: String, phone: String) {
     self.id = id
     self.name = name
     self.surname = surname
@@ -14,54 +14,36 @@ struct Contact {
   }
 }
 
-class ContactBook {
+public class ContactBook {
   public var contacts = [Contact.Id: Contact]()
-  private var counter: Contact.Id = 0
+  private var lastId: Contact.Id = 0
 
-  func addContact(name: String, surname: String, phone: String) -> Contact {
-    counter += 1
-    let newId = counter
+  enum ContactError: Error {
+    case noContact
+  }
+
+  public func addContact(name: String, surname: String, phone: String) -> Contact {
+    lastId += 1
+    let newId = lastId
     let newContact = Contact(id: newId, name: name, surname: surname, phone: phone)
     contacts[newId] = newContact
     return newContact
   }
-  
-  func updateContact(id: Contact.Id, name: String? = nil, surname: String? = nil, phone: String? = nil) -> Bool {
-    guard var contact = contacts[id] else {
-      return false
-    }
-    if let name = name {
-      contact.name = name
-    }
-    if let surname = surname {
-      contact.surname = surname
-    }
-    if let phone = phone {
-      contact.phone = phone
-    }
-    contacts[id] = contact
-    return true
-  }
 
-  func updateContact(id: Contact.Id, newContact: Contact) -> Bool {
+  public func updateContact(id: Contact.Id, newContact: Contact) throws {
     guard let _ = contacts[id] else {
-      return false
+      throw ContactError.noContact
     }
     contacts[id] = newContact
-    return true
   }
 
-  func removeContact(id: Contact.Id) {
+  public func removeContact(id: Contact.Id) {
     contacts.removeValue(forKey: id)
   }
 
-  func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
-    return contacts.values.filter( {predicate($0)} )
+  public func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
+    return contacts.values.filter {predicate($0)}
   }
-}
-
-enum ContactError: Error {
-  case noContact
 }
 
 var book = ContactBook()
@@ -71,19 +53,19 @@ let ira = book.addContact(name: "Nil", surname: "Nil", phone: "Nil")
 let correctIra = Contact(id: ira.id, name: "Ira", surname: "Hor", phone: "+3801")
 
 guard let contactAlya = book.contacts[alya.id] else {
-  throw ContactError.noContact
+  throw ContactBook.ContactError.noContact
 }
 assert(contactAlya.name == "Alya")
 
-book.updateContact(id: julia.id, name: "Julia")
+try book.updateContact(id: julia.id, newContact: Contact(id: julia.id, name: "Julia", surname: julia.surname, phone: julia.phone))
 guard let contactJulia = book.contacts[julia.id] else {
-  throw ContactError.noContact
+  throw ContactBook.ContactError.noContact
 }
 assert(contactJulia.name == "Julia")
 
-book.updateContact(id: ira.id, newContact: correctIra)
+try book.updateContact(id: ira.id, newContact: correctIra)
 guard let contactIra = book.contacts[ira.id] else {
-  throw ContactError.noContact
+  throw ContactBook.ContactError.noContact
 }
 assert(contactIra.name == "Ira")
 
