@@ -30,11 +30,11 @@ public class ContactBook {
     return newContact
   }
 
-  public func updateContact(id: Contact.Id, newContact: Contact) throws {
-    guard let _ = contacts[id] else {
+  public func updateContact(newContact: Contact) throws {
+    guard let _ = contacts[newContact.id] else {
       throw ContactError.noContact
     }
-    contacts[id] = newContact
+    contacts[newContact.id] = newContact
   }
 
   public func removeContact(id: Contact.Id) {
@@ -42,7 +42,7 @@ public class ContactBook {
   }
 
   public func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
-    return contacts.values.filter {predicate($0)}
+    return contacts.values.filter { predicate($0) }
   }
 }
 
@@ -57,30 +57,33 @@ guard let contactAlya = book.contacts[alya.id] else {
 }
 assert(contactAlya.name == "Alya")
 
-try book.updateContact(id: julia.id, newContact: Contact(id: julia.id, name: "Julia", surname: julia.surname, phone: julia.phone))
+try book.updateContact(
+  newContact: Contact(id: julia.id, name: "Julia", surname: julia.surname, phone: julia.phone))
 guard let contactJulia = book.contacts[julia.id] else {
   throw ContactBook.ContactError.noContact
 }
 assert(contactJulia.name == "Julia")
 
-try book.updateContact(id: ira.id, newContact: correctIra)
+try book.updateContact(newContact: correctIra)
 guard let contactIra = book.contacts[ira.id] else {
   throw ContactBook.ContactError.noContact
 }
 assert(contactIra.name == "Ira")
 
-assert(book.listContacts(where: {
-  guard $0.phone.count > 0 else {
-    return false
-  }
-  return $0.phone[$0.phone.startIndex] == "+"
-}).count == 3)
+assert(
+  book.listContacts(where: {
+    guard $0.phone.count > 0 else {
+      return false
+    }
+    return $0.phone[$0.phone.startIndex] == "+"
+  }).count == 3)
 
 book.removeContact(id: alya.id)
 assert(book.contacts[alya.id] == nil)
-assert(book.listContacts(where: {
-  guard $0.phone.count > 0 else {
-    return false
-  }
-  return $0.phone[$0.phone.startIndex] == "+"
-}).count == 2)
+assert(
+  book.listContacts(where: {
+    guard $0.phone.count > 0 else {
+      return false
+    }
+    return $0.phone[$0.phone.startIndex] == "+"
+  }).count == 2)
