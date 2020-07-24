@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import PersistenceTask
 
 final class PersistenceTaskTests: XCTestCase {
@@ -14,15 +15,17 @@ final class PersistenceTaskTests: XCTestCase {
   func testInitialization() throws {
     _ = try TodoList()
   }
-  
+
   func testNotEmptyInitialization() throws {
     // GIVEN
     do {
-      let todos = [Todo(todo: "take a walk with dogs"), Todo(todo: "learn swift"), Todo(todo: "call mum")]
-      
+      let todos = [
+        Todo(todo: "take a walk with dogs"), Todo(todo: "learn swift"), Todo(todo: "call mum"),
+      ]
+
       let jsonEncoder = JSONEncoder()
       let data = try jsonEncoder.encode(todos)
-      
+
       try data.write(to: fileURL)
     }
 
@@ -40,7 +43,7 @@ final class PersistenceTaskTests: XCTestCase {
     XCTAssertFalse(todoList.todos[1].isCompleted)
     XCTAssertFalse(todoList.todos[2].isCompleted)
   }
-  
+
   func testAddAndChangeStatus() throws {
     // WHEN
     do {
@@ -52,10 +55,10 @@ final class PersistenceTaskTests: XCTestCase {
 
     // THEN
     let data = try Data(contentsOf: fileURL)
-    
+
     let jsonDecoder = JSONDecoder()
     let todos = try jsonDecoder.decode([Todo].self, from: data)
-    
+
     XCTAssertEqual(todos.count, 2)
     XCTAssertEqual(todos[0].todo, "get some sleep")
     XCTAssertEqual(todos[1].todo, "buy curd snack")

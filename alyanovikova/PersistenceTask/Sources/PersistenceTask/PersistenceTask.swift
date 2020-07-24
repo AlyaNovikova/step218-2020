@@ -2,7 +2,7 @@ import Foundation
 
 public struct Todo: Equatable, Codable {
   public let todo: String
-  public var isCompleted: Bool
+  public fileprivate(set) var isCompleted: Bool
 
   public init(todo: String, isCompleted: Bool = false) {
     self.todo = todo
@@ -36,7 +36,7 @@ public class TodoList: Codable {
     }
     try todos.writeJSON(to: fileURL)
   }
-  
+
   static func makeDefaultURL() throws -> URL {
     let documentsDirectory = try FileManager.default.url(
       for: .documentDirectory,
