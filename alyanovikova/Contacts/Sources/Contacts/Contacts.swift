@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 public struct Contact: Codable {
   public typealias Id = Int
@@ -16,24 +17,38 @@ public struct Contact: Codable {
   }
 }
 
-public class ContactBook: Codable {
+struct ContactList: Codable {
+  let contacts: [Contact.Id: Contact]
+  let lastId: Contact.Id
+
+  init(contacts: [Contact.Id: Contact], lastId: Contact.Id) {
+    self.contacts = contacts
+    self.lastId = lastId
+  }
+}
+
+public class ContactBook {
   public var contacts = [Contact.Id: Contact]()
   private var lastId: Contact.Id = 0
   private let fileURL: URL
+  private let logger = Logger(label: "com.google.WearOS.ContactBook")
 
   enum ContactError: Error {
-    case noContact
+    case nonexistentId
   }
 
   public init() throws {
     fileURL = try Self.makeDefaultURL()
     do {
-      let contactBook = try ContactBook(jsonFileURL: fileURL)
-      contacts = contactBook.contacts
-      lastId = contactBook.lastId
+      let contactList = try ContactList(jsonFileURL: fileURL)
+      contacts = contactList.contacts
+      lastId = contactList.lastId
     } catch CocoaError.fileReadNoSuchFile {
       contacts = [:]
       lastId = 0
+      logger.error("FileURL not found, init with blank ContactBook")
+    } catch let error {
+      logger.error("Failed to init ContactBook with \(error)")
     }
   }
 
@@ -49,24 +64,37 @@ public class ContactBook: Codable {
     let newContact = Contact(id: newId, name: name, surname: surname, phone: phone)
     contacts[newId] = newContact
 
-    try self.writeJSON(to: fileURL)
+    do {
+      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+    } catch let error {
+      logger.error("Failed to write to file in function addContact with \(error)")
+    }
 
     return newContact
   }
 
   public func updateContact(newContact: Contact) throws {
     guard let _ = contacts[newContact.id] else {
-      throw ContactError.noContact
+      logger.error("Failed to update contact by nonexistent id \(newContact.id)")
+      throw ContactError.nonexistentId
     }
     contacts[newContact.id] = newContact
 
-    try self.writeJSON(to: fileURL)
+    do {
+      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+    } catch let error {
+      logger.error("Failed to write to file in function updateContact with \(error)")
+    }
   }
 
   public func removeContact(id: Contact.Id) throws {
     contacts.removeValue(forKey: id)
 
-    try self.writeJSON(to: fileURL)
+    do {
+      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+    } catch let error {
+      logger.error("Failed to write to file in function removeContact with \(error)")
+    }
   }
 
   public func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
@@ -74,12 +102,16 @@ public class ContactBook: Codable {
   }
 
   static func makeDefaultURL() throws -> URL {
+    //    do {
     let documentsDirectory = try FileManager.default.url(
       for: .documentDirectory,
       in: .userDomainMask,
       appropriateFor: nil,
       create: true)
     return documentsDirectory.appendingPathComponent("ContactBook")
+    //    } catch let error {
+    //      logger.error("Failed to make default URL with \(error)")
+    //    }
   }
 }
 

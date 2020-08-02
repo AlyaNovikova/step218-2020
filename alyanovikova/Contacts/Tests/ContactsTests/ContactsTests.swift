@@ -24,10 +24,10 @@ final class ContactsTests: XCTestCase {
         1: Contact(id: 1, name: "name1", surname: "surname1", phone: "+1"),
         2: Contact(id: 2, name: "name2", surname: "surname2", phone: "+2"),
       ]
-      let book = try ContactBook(contacts: contacts, lastId: 2)
+      let list = ContactList(contacts: contacts, lastId: 2)
 
       let jsonEncoder = JSONEncoder()
-      let data = try jsonEncoder.encode(book)
+      let data = try jsonEncoder.encode(list)
 
       try data.write(to: fileURL)
     }
@@ -40,7 +40,7 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(book.contacts.count, 2)
 
     guard let contact1 = book.contacts[1] else {
-      throw ContactBook.ContactError.noContact
+      throw ContactBook.ContactError.nonexistentId
     }
     XCTAssertEqual(contact1.id, 1)
     XCTAssertEqual(contact1.name, "name1")
@@ -48,7 +48,7 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact1.phone, "+1")
 
     guard let contact2 = book.contacts[2] else {
-      throw ContactBook.ContactError.noContact
+      throw ContactBook.ContactError.nonexistentId
     }
     XCTAssertEqual(contact2.id, 2)
     XCTAssertEqual(contact2.name, "name2")
@@ -72,7 +72,7 @@ final class ContactsTests: XCTestCase {
       XCTAssertEqual(book.contacts.count, 3)
 
       guard let contactAlya = book.contacts[1] else {
-        throw ContactBook.ContactError.noContact
+        throw ContactBook.ContactError.nonexistentId
       }
       XCTAssertEqual(contactAlya.id, 1)
       XCTAssertEqual(contactAlya.name, "Alya")
@@ -95,12 +95,12 @@ final class ContactsTests: XCTestCase {
       let book = try ContactBook()
 
       guard let contactJulia = book.contacts[2] else {
-        throw ContactBook.ContactError.noContact
+        throw ContactBook.ContactError.nonexistentId
       }
       XCTAssertEqual(contactJulia.name, "Julia")
 
       guard let contactIra = book.contacts[3] else {
-        throw ContactBook.ContactError.noContact
+        throw ContactBook.ContactError.nonexistentId
       }
       XCTAssertEqual(contactIra.name, "Ira")
 
