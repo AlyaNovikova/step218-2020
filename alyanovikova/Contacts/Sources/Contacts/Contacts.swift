@@ -102,16 +102,12 @@ public class ContactBook {
   }
 
   static func makeDefaultURL() throws -> URL {
-    //    do {
     let documentsDirectory = try FileManager.default.url(
       for: .documentDirectory,
       in: .userDomainMask,
       appropriateFor: nil,
       create: true)
     return documentsDirectory.appendingPathComponent("ContactBook")
-    //    } catch let error {
-    //      logger.error("Failed to make default URL with \(error)")
-    //    }
   }
 }
 
