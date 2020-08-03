@@ -2,70 +2,50 @@ import Foundation
 import Logging
 
 public struct Contact: Codable {
-  public typealias Id = Int
+  public typealias Id = UUID
 
   public let id: Id
   public var name: String
   public var surname: String
   public var phone: String
 
-  public init(id: Id, name: String, surname: String, phone: String) {
-    self.id = id
+  public init(name: String, surname: String, phone: String) {
+    id = Id()
+
     self.name = name
     self.surname = surname
     self.phone = phone
   }
 }
 
-struct ContactList: Codable {
-  let contacts: [Contact.Id: Contact]
-  let lastId: Contact.Id
-
-  init(contacts: [Contact.Id: Contact], lastId: Contact.Id) {
-    self.contacts = contacts
-    self.lastId = lastId
-  }
-}
-
 public class ContactBook {
   public var contacts = [Contact.Id: Contact]()
-  private var lastId: Contact.Id = 0
   private let fileURL: URL
   private let logger = Logger(label: "com.google.WearOS.ContactBook")
 
   enum ContactError: Error {
     case nonexistentId
+    case noContact
   }
 
   public init() throws {
     fileURL = try Self.makeDefaultURL()
     do {
-      let contactList = try ContactList(jsonFileURL: fileURL)
-      contacts = contactList.contacts
-      lastId = contactList.lastId
+      contacts = try [Contact.Id: Contact](jsonFileURL: fileURL)
     } catch CocoaError.fileReadNoSuchFile {
       contacts = [:]
-      lastId = 0
       logger.error("FileURL not found, init with blank ContactBook")
     } catch let error {
       logger.error("Failed to init ContactBook with \(error)")
     }
   }
 
-  init(contacts: [Contact.Id: Contact], lastId: Contact.Id) throws {
-    fileURL = try Self.makeDefaultURL()
-    self.contacts = contacts
-    self.lastId = lastId
-  }
-
   public func addContact(name: String, surname: String, phone: String) throws -> Contact {
-    lastId += 1
-    let newId = lastId
-    let newContact = Contact(id: newId, name: name, surname: surname, phone: phone)
-    contacts[newId] = newContact
+    let newContact = Contact(name: name, surname: surname, phone: phone)
+    contacts[newContact.id] = newContact
 
     do {
-      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+      try contacts.writeJSON(to: fileURL)
     } catch let error {
       logger.error("Failed to write to file in function addContact with \(error)")
     }
@@ -81,7 +61,7 @@ public class ContactBook {
     contacts[newContact.id] = newContact
 
     do {
-      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+      try contacts.writeJSON(to: fileURL)
     } catch let error {
       logger.error("Failed to write to file in function updateContact with \(error)")
     }
@@ -91,7 +71,7 @@ public class ContactBook {
     contacts.removeValue(forKey: id)
 
     do {
-      try ContactList(contacts: contacts, lastId: lastId).writeJSON(to: fileURL)
+      try contacts.writeJSON(to: fileURL)
     } catch let error {
       logger.error("Failed to write to file in function removeContact with \(error)")
     }
