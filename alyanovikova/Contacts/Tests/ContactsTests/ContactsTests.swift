@@ -58,13 +58,13 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact2.phone, "+2")
   }
 
-  func testAddUpdateRemoveContact() throws {
+  func testAddContact() throws {
     // WHEN
     do {
       let book = try ContactBook()
       _ = try book.addContact(name: "Alya", surname: "Nov", phone: "+7911")
-      _ = try book.addContact(name: "Juliaaaaa", surname: "Sam", phone: "+3800")
-      _ = try book.addContact(name: "Nil", surname: "Nil", phone: "Nil")
+      _ = try book.addContact(name: "Julia", surname: "Sam", phone: "+3800")
+      _ = try book.addContact(name: "Ira", surname: "Hor", phone: "+3801")
     }
 
     // THEN
@@ -85,6 +85,16 @@ final class ContactsTests: XCTestCase {
       XCTAssertEqual(contactAlya.surname, "Nov")
       XCTAssertEqual(contactAlya.phone, "+7911")
     }
+  }
+
+  func testUpdateContact() throws {
+    // GIVEN
+    do {
+      let book = try ContactBook()
+      _ = try book.addContact(name: "Alya", surname: "Nov", phone: "+7911")
+      _ = try book.addContact(name: "Juliaaaaa", surname: "Sam", phone: "+3800")
+      _ = try book.addContact(name: "Nil", surname: "Nil", phone: "Nil")
+    }
 
     // WHEN
     do {
@@ -100,10 +110,8 @@ final class ContactsTests: XCTestCase {
       ira.surname = "Hor"
       ira.phone = "+3801"
 
-      try book.updateContact(
-        newContact: julia)
-      try book.updateContact(
-        newContact: ira)
+      try book.updateContact(newContact: julia)
+      try book.updateContact(newContact: ira)
     }
 
     // THEN
@@ -133,6 +141,16 @@ final class ContactsTests: XCTestCase {
           }
           return $0.phone[$0.phone.startIndex] == "+"
         }).count, 3)
+    }
+  }
+
+  func testRemoveContact() throws {
+    // GIVEN
+    do {
+      let book = try ContactBook()
+      _ = try book.addContact(name: "Alya", surname: "Nov", phone: "+7911")
+      _ = try book.addContact(name: "Julia", surname: "Sam", phone: "+3800")
+      _ = try book.addContact(name: "Ira", surname: "Hor", phone: "+3801")
     }
 
     // WHEN

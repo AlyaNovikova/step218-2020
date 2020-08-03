@@ -21,7 +21,7 @@ public struct Contact: Codable {
 public class ContactBook {
   public var contacts = [Contact.Id: Contact]()
   private let fileURL: URL
-  private let logger = Logger(label: "com.google.WearOS.ContactBook")
+  private let logger = Logger(label: "com.google.Internship.ContactBook")
 
   enum ContactError: Error {
     case nonexistentId
@@ -35,7 +35,7 @@ public class ContactBook {
     } catch CocoaError.fileReadNoSuchFile {
       contacts = [:]
       logger.error("FileURL not found, init with blank ContactBook")
-    } catch let error {
+    } catch {
       logger.error("Failed to init ContactBook with \(error)")
     }
   }
@@ -46,7 +46,7 @@ public class ContactBook {
 
     do {
       try contacts.writeJSON(to: fileURL)
-    } catch let error {
+    } catch {
       logger.error("Failed to write to file in function addContact with \(error)")
     }
 
@@ -62,7 +62,7 @@ public class ContactBook {
 
     do {
       try contacts.writeJSON(to: fileURL)
-    } catch let error {
+    } catch {
       logger.error("Failed to write to file in function updateContact with \(error)")
     }
   }
@@ -72,7 +72,7 @@ public class ContactBook {
 
     do {
       try contacts.writeJSON(to: fileURL)
-    } catch let error {
+    } catch {
       logger.error("Failed to write to file in function removeContact with \(error)")
     }
   }
