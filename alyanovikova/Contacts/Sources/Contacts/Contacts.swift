@@ -18,8 +18,37 @@ public struct Contact: Codable {
   }
 }
 
+public class Group {
+  public typealias Id = UUID
+
+  public let id: Id
+  public var title: String
+  public var members: [Contact.Id]
+
+  public init(title: String, members: [Contact.Id]) {
+    id = Id()
+
+    self.title = title
+    self.members = members
+  }
+
+  func add(contactId: Contact.Id) {
+    if !members.contains(contactId) {
+      members.append(contactId)
+    }
+  }
+
+  func remove(contactId: Contact.Id) {
+    if let index = members.firstIndex(of: contactId) {
+        members.remove(at: index)
+    }
+  }
+}
+
 public class ContactBook {
   public var contacts = [Contact.Id: Contact]()
+  public var groups = [Group.Id: Group]()
+
   private let fileURL: URL
   private let logger = Logger(label: "com.google.Internship.ContactBook")
 
@@ -40,6 +69,7 @@ public class ContactBook {
     }
   }
 
+  // Functions with Contact
   public func addContact(name: String, surname: String, phone: String) throws -> Contact {
     let newContact = Contact(name: name, surname: surname, phone: phone)
     contacts[newContact.id] = newContact
@@ -81,6 +111,13 @@ public class ContactBook {
     return contacts.values.filter { predicate($0) }
   }
 
+  // Functions with Group
+  public func addGroup(title: String, members: [Contact.Id] = []) {
+    let newGroup = Group(title: title, members: members)
+    groups[newGroup.id] = newGroup
+  }
+
+  // Functions for working with files
   static func makeDefaultURL() throws -> URL {
     let documentsDirectory = try FileManager.default.url(
       for: .documentDirectory,
@@ -89,6 +126,8 @@ public class ContactBook {
       create: true)
     return documentsDirectory.appendingPathComponent("ContactBook")
   }
+
+  
 }
 
 extension Encodable {
