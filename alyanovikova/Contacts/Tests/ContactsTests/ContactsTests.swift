@@ -12,6 +12,12 @@ final class ContactsTests: XCTestCase {
     }
   }
 
+  enum ContactError: Error {
+    case noContact
+    case nonexistentIdOfContact
+    case nonexistentIdOfGroup
+  }
+
   func testInitialization() throws {
     _ = try ContactBook()
 
@@ -27,9 +33,10 @@ final class ContactsTests: XCTestCase {
         man1.id: man1,
         man2.id: man2,
       ]
+      let groupsAndContacts = GroupsAndContacts(contacts: contacts)
 
       let jsonEncoder = JSONEncoder()
-      let data = try jsonEncoder.encode(contacts)
+      let data = try jsonEncoder.encode(groupsAndContacts)
 
       try data.write(to: fileURL)
     }
@@ -42,7 +49,7 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(book.contacts.count, 2)
 
     guard let contact1 = book.contacts[man1.id] else {
-      throw ContactBook.ContactError.nonexistentId
+      throw ContactBook.ContactError.nonexistentIdOfContact
     }
     XCTAssertEqual(contact1.id, man1.id)
     XCTAssertEqual(contact1.name, "name1")
@@ -50,7 +57,7 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact1.phone, "+1")
 
     guard let contact2 = book.contacts[man2.id] else {
-      throw ContactBook.ContactError.nonexistentId
+      throw ContactBook.ContactError.nonexistentIdOfContact
     }
     XCTAssertEqual(contact2.id, man2.id)
     XCTAssertEqual(contact2.name, "name2")
@@ -71,13 +78,13 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let alya = book.listContacts(where: { $0.name == "Alya" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
 
       XCTAssertEqual(book.contacts.count, 3)
 
       guard let contactAlya = book.contacts[alya.id] else {
-        throw ContactBook.ContactError.nonexistentId
+        throw ContactsTests.ContactError.nonexistentIdOfContact
       }
 
       XCTAssertEqual(contactAlya.id, alya.id)
@@ -100,10 +107,10 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard var julia = book.listContacts(where: { $0.name == "Juliaaaaa" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
       guard var ira = book.listContacts(where: { $0.name == "Nil" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
       julia.name = "Julia"
       ira.name = "Ira"
@@ -118,19 +125,19 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let julia = book.listContacts(where: { $0.name == "Julia" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
       guard let ira = book.listContacts(where: { $0.name == "Ira" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
 
       guard let contactJulia = book.contacts[julia.id] else {
-        throw ContactBook.ContactError.nonexistentId
+        throw ContactsTests.ContactError.nonexistentIdOfContact
       }
       XCTAssertEqual(contactJulia.name, "Julia")
 
       guard let contactIra = book.contacts[ira.id] else {
-        throw ContactBook.ContactError.nonexistentId
+        throw ContactsTests.ContactError.nonexistentIdOfContact
       }
       XCTAssertEqual(contactIra.name, "Ira")
 
@@ -157,7 +164,7 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let alya = book.listContacts(where: { $0.name == "Alya" }).first else {
-        throw ContactBook.ContactError.noContact
+        throw ContactsTests.ContactError.noContact
       }
       try book.removeContact(id: alya.id)
     }
