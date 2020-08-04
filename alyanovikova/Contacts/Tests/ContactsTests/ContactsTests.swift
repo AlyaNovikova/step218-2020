@@ -14,6 +14,7 @@ final class ContactsTests: XCTestCase {
 
   enum ContactError: Error {
     case noContact
+    case noGroup
     case nonexistentIdOfContact
     case nonexistentIdOfGroup
   }
@@ -28,12 +29,15 @@ final class ContactsTests: XCTestCase {
     let man1 = Contact(name: "name1", surname: "surname1", phone: "+1")
     let man2 = Contact(name: "name2", surname: "surname2", phone: "+2")
 
+    let group1 = Group(title: "group1", members: [man1.id])
+
     do {
       let contacts = [
         man1.id: man1,
         man2.id: man2,
       ]
-      let groupsAndContacts = GroupsAndContacts(contacts: contacts)
+      let groups = [group1.id: group1]
+      let groupsAndContacts = GroupsAndContacts(contacts: contacts, groups: groups)
 
       let jsonEncoder = JSONEncoder()
       let data = try jsonEncoder.encode(groupsAndContacts)
@@ -49,7 +53,7 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(book.contacts.count, 2)
 
     guard let contact1 = book.contacts[man1.id] else {
-      throw ContactBook.ContactError.nonexistentIdOfContact
+      throw ContactsTests.ContactError.nonexistentIdOfContact
     }
     XCTAssertEqual(contact1.id, man1.id)
     XCTAssertEqual(contact1.name, "name1")
@@ -57,12 +61,19 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact1.phone, "+1")
 
     guard let contact2 = book.contacts[man2.id] else {
-      throw ContactBook.ContactError.nonexistentIdOfContact
+      throw ContactsTests.ContactError.nonexistentIdOfContact
     }
     XCTAssertEqual(contact2.id, man2.id)
     XCTAssertEqual(contact2.name, "name2")
     XCTAssertEqual(contact2.surname, "surname2")
     XCTAssertEqual(contact2.phone, "+2")
+
+    guard let group = book.groups[group1.id] else {
+      throw ContactsTests.ContactError.nonexistentIdOfGroup
+    }
+    XCTAssertEqual(group.id, group1.id)
+    XCTAssertEqual(group1.title, "group1")
+    XCTAssertEqual(group.members.count, 1)
   }
 
   func testAddContact() throws {
@@ -181,6 +192,152 @@ final class ContactsTests: XCTestCase {
           }
           return $0.phone[$0.phone.startIndex] == "+"
         }).count, 2)
+    }
+  }
+
+  func testAddGroup() throws {
+    // WHEN
+    do {
+      let book = try ContactBook()
+      let man1 = try book.addContact(name: "name1", surname: "surname1", phone: "+1")
+      let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
+
+      let friends = try book.addGroup(title: "Friends")
+      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+
+      try book.add(to: friends, contact: man1)
+    }
+
+    // THEN
+    do {
+      let book = try ContactBook()
+      XCTAssertEqual(book.groups.count, 2)
+
+      guard let group1 = book.groups.values.first(where: { $0.title == "Friends" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let group2 = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let friends = book.groups[group1.id] else {
+        throw ContactsTests.ContactError.nonexistentIdOfGroup
+      }
+
+      guard let all = book.groups[group2.id] else {
+        throw ContactsTests.ContactError.nonexistentIdOfGroup
+      }
+
+      XCTAssertEqual(friends.id, group1.id)
+      XCTAssertEqual(friends.title, "Friends")
+      XCTAssertEqual(friends.members.count, 1)
+
+      XCTAssertEqual(all.id, group2.id)
+      XCTAssertEqual(all.title, "AllContacts")
+      XCTAssertEqual(all.members.count, 2)
+    }
+  }
+
+  func testRemoveGroup() throws {
+    // GIVEN
+    do {
+      let book = try ContactBook()
+      let man1 = try book.addContact(name: "name1", surname: "surname1", phone: "+1")
+      let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
+
+      let friends = try book.addGroup(title: "Friends")
+      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+
+      try book.add(to: friends, contact: man1)
+    }
+
+    // WHEN
+    do {
+      let book = try ContactBook()
+
+      guard let friends = book.groups.values.first(where: { $0.title == "Friends" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      try book.removeGroup(id: friends.id)
+    }
+
+    do {
+      let book = try ContactBook()
+
+      guard let man = book.listContacts(where: { $0.name == "name1" }).first else {
+        throw ContactsTests.ContactError.noContact
+      }
+
+      guard let all = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      try book.remove(from: all, contact: man)
+    }
+
+    // THEN
+    do {
+      let book = try ContactBook()
+      XCTAssertEqual(book.groups.count, 1)
+
+      XCTAssertNil(book.groups.values.first(where: { $0.title == "Friends" }))
+
+      guard let group = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let all = book.groups[group.id] else {
+        throw ContactsTests.ContactError.nonexistentIdOfGroup
+      }
+      XCTAssertEqual(all.id, group.id)
+      XCTAssertEqual(all.title, "AllContacts")
+      XCTAssertEqual(all.members.count, 1)
+    }
+  }
+
+  func testMembers() throws {
+    // GIVEN
+    do {
+      let book = try ContactBook()
+      let man1 = try book.addContact(name: "name1", surname: "surname1", phone: "+1")
+      let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
+
+      let friends = try book.addGroup(title: "Friends")
+      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+
+      try book.add(to: friends, contact: man1)
+    }
+
+    // THEN
+    do {
+      let book = try ContactBook()
+      XCTAssertEqual(book.groups.count, 2)
+
+      guard let friends = book.groups.values.first(where: { $0.title == "Friends" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let all = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let man1 = book.listContacts(where: { $0.name == "name1" }).first else {
+        throw ContactsTests.ContactError.noContact
+      }
+
+      guard let man2 = book.listContacts(where: { $0.name == "name2" }).first else {
+        throw ContactsTests.ContactError.noContact
+      }
+
+      try XCTAssertEqual(book.members(of: all), [man1, man2])
+      try XCTAssertEqual(book.members(of: friends), [man1])
+
+      try book.removeContact(id: man1.id)
+
+      try XCTAssertEqual(book.members(of: all), [man2])
+      try XCTAssertEqual(book.members(of: friends), [])
     }
   }
 }

@@ -1,7 +1,7 @@
 import Foundation
 import Logging
 
-public struct Contact: Codable {
+public struct Contact: Equatable,  Codable {
   public typealias Id = UUID
 
   public let id: Id
@@ -25,7 +25,7 @@ public struct Group: Codable {
   public var title: String
   public var members: [Contact.Id]
 
-  public init(title: String, members: [Contact.Id]) {
+  public init(title: String, members: [Contact.Id] = []) {
     id = Id()
 
     self.title = title
@@ -84,7 +84,6 @@ public class ContactBook {
     }
   }
 
-  
   // Functions with Contact
   public func addContact(name: String, surname: String, phone: String) throws -> Contact {
     let newContact = Contact(name: name, surname: surname, phone: phone)
@@ -114,7 +113,6 @@ public class ContactBook {
   public func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
     return contacts.values.filter { predicate($0) }
   }
-
 
   // Functions with Group
   public func addGroup(title: String, members: [Contact.Id] = []) throws -> Group {
@@ -186,7 +184,6 @@ public class ContactBook {
 
     return contactsList
   }
-
 
   // Functions for working with files
   static func makeDefaultURL() throws -> URL {
