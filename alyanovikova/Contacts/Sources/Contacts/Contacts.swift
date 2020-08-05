@@ -1,7 +1,7 @@
 import Foundation
 import Logging
 
-public struct Contact: Equatable,  Codable {
+public struct Contact: Equatable, Codable {
   public typealias Id = UUID
 
   public let id: Id
@@ -22,25 +22,25 @@ public struct Group: Codable {
   public typealias Id = UUID
 
   public let id: Id
-  public var title: String
-  public var members: [Contact.Id]
+  public internal(set) var title: String
+  public internal(set) var contactIds: [Contact.Id]
 
-  public init(title: String, members: [Contact.Id] = []) {
+  public init(title: String, contactIds: [Contact.Id] = []) {
     id = Id()
 
     self.title = title
-    self.members = members
+    self.contactIds = contactIds
   }
 
   mutating func add(contactId: Contact.Id) {
-    if !members.contains(contactId) {
-      members.append(contactId)
+    if !contactIds.contains(contactId) {
+      contactIds.append(contactId)
     }
   }
 
   mutating func remove(contactId: Contact.Id) {
-    if let index = members.firstIndex(of: contactId) {
-        members.remove(at: index)
+    if let index = contactIds.firstIndex(of: contactId) {
+      contactIds.remove(at: index)
     }
   }
 }
@@ -110,13 +110,19 @@ public class ContactBook {
     try writeToFile()
   }
 
+  public func removeContact(_ contact: Contact) throws {
+    contacts.removeValue(forKey: contact.id)
+
+    try writeToFile()
+  }
+
   public func listContacts(where predicate: (Contact) -> Bool) -> [Contact] {
     return contacts.values.filter { predicate($0) }
   }
 
   // Functions with Group
-  public func addGroup(title: String, members: [Contact.Id] = []) throws -> Group {
-    let newGroup = Group(title: title, members: members)
+  public func addGroup(title: String, contacts: [Contact] = []) throws -> Group {
+    let newGroup = Group(title: title, contactIds: contacts.map({ $0.id }))
     groups[newGroup.id] = newGroup
 
     try writeToFile()
@@ -147,6 +153,12 @@ public class ContactBook {
     try writeToFile()
   }
 
+  public func removeGroup(_ group: Group) throws {
+    groups.removeValue(forKey: group.id)
+
+    try writeToFile()
+  }
+
   public func remove(from group: Group, contact: Contact) throws {
     guard var existGroup = groups[group.id] else {
       logger.error("Failed to remove contact from group due to a nonexistent group id \(group.id)")
@@ -154,7 +166,8 @@ public class ContactBook {
     }
 
     guard let _ = contacts[contact.id] else {
-      logger.error("Failed to remove contact grom group due to a nonexistent contact id \(contact.id)")
+      logger.error(
+        "Failed to remove contact grom group due to a nonexistent contact id \(contact.id)")
       throw ContactError.nonexistentIdOfContact
     }
 
@@ -164,14 +177,14 @@ public class ContactBook {
     try writeToFile()
   }
 
-  public func members(of group: Group) throws -> [Contact] {
+  public func contacts(of group: Group) throws -> [Contact] {
     guard var existGroup = groups[group.id] else {
       logger.error("Failed to get group members due to nonexistent group id \(group.id)")
       throw ContactError.nonexistentIdOfGroup
     }
 
     var contactsList: [Contact] = []
-    for id in existGroup.members {
+    for id in existGroup.contactIds {
       if let contact = contacts[id] {
         contactsList.append(contact)
       } else {
@@ -183,6 +196,18 @@ public class ContactBook {
     try writeToFile()
 
     return contactsList
+  }
+
+  public func changeTitle(of group: Group, newTitle: String) throws {
+    guard var existGroup = groups[group.id] else {
+      logger.error("Failed to add contact to group due to a nonexistent group id \(group.id)")
+      throw ContactError.nonexistentIdOfGroup
+    }
+
+    existGroup.title = newTitle
+    groups[group.id] = existGroup
+
+    try writeToFile()
   }
 
   // Functions for working with files

@@ -29,7 +29,7 @@ final class ContactsTests: XCTestCase {
     let man1 = Contact(name: "name1", surname: "surname1", phone: "+1")
     let man2 = Contact(name: "name2", surname: "surname2", phone: "+2")
 
-    let group1 = Group(title: "group1", members: [man1.id])
+    let group1 = Group(title: "group1", contactIds: [man1.id])
 
     do {
       let contacts = [
@@ -73,7 +73,7 @@ final class ContactsTests: XCTestCase {
     }
     XCTAssertEqual(group.id, group1.id)
     XCTAssertEqual(group1.title, "group1")
-    XCTAssertEqual(group.members.count, 1)
+    XCTAssertEqual(group.contactIds.count, 1)
   }
 
   func testAddContact() throws {
@@ -203,7 +203,7 @@ final class ContactsTests: XCTestCase {
       let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
 
       let friends = try book.addGroup(title: "Friends")
-      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+      let _ = try book.addGroup(title: "AllContacts", contacts: [man1, man2])
 
       try book.add(to: friends, contact: man1)
     }
@@ -231,11 +231,11 @@ final class ContactsTests: XCTestCase {
 
       XCTAssertEqual(friends.id, group1.id)
       XCTAssertEqual(friends.title, "Friends")
-      XCTAssertEqual(friends.members.count, 1)
+      XCTAssertEqual(friends.contactIds.count, 1)
 
       XCTAssertEqual(all.id, group2.id)
       XCTAssertEqual(all.title, "AllContacts")
-      XCTAssertEqual(all.members.count, 2)
+      XCTAssertEqual(all.contactIds.count, 2)
     }
   }
 
@@ -247,7 +247,7 @@ final class ContactsTests: XCTestCase {
       let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
 
       let friends = try book.addGroup(title: "Friends")
-      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+      let _ = try book.addGroup(title: "AllContacts", contacts: [man1, man2])
 
       try book.add(to: friends, contact: man1)
     }
@@ -293,11 +293,11 @@ final class ContactsTests: XCTestCase {
       }
       XCTAssertEqual(all.id, group.id)
       XCTAssertEqual(all.title, "AllContacts")
-      XCTAssertEqual(all.members.count, 1)
+      XCTAssertEqual(all.contactIds.count, 1)
     }
   }
 
-  func testMembers() throws {
+  func testContacts() throws {
     // GIVEN
     do {
       let book = try ContactBook()
@@ -305,7 +305,7 @@ final class ContactsTests: XCTestCase {
       let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
 
       let friends = try book.addGroup(title: "Friends")
-      let _ = try book.addGroup(title: "AllContacts", members: [man1.id, man2.id])
+      let _ = try book.addGroup(title: "AllContacts", contacts: [man1, man2])
 
       try book.add(to: friends, contact: man1)
     }
@@ -331,13 +331,56 @@ final class ContactsTests: XCTestCase {
         throw ContactsTests.ContactError.noContact
       }
 
-      try XCTAssertEqual(book.members(of: all), [man1, man2])
-      try XCTAssertEqual(book.members(of: friends), [man1])
+      try XCTAssertEqual(book.contacts(of: all), [man1, man2])
+      try XCTAssertEqual(book.contacts(of: friends), [man1])
 
       try book.removeContact(id: man1.id)
 
-      try XCTAssertEqual(book.members(of: all), [man2])
-      try XCTAssertEqual(book.members(of: friends), [])
+      try XCTAssertEqual(book.contacts(of: all), [man2])
+      try XCTAssertEqual(book.contacts(of: friends), [])
+    }
+  }
+
+  func testChangeTitle() throws {
+    // GIVEN
+    do {
+      let book = try ContactBook()
+      let man1 = try book.addContact(name: "name1", surname: "surname1", phone: "+1")
+      let man2 = try book.addContact(name: "name2", surname: "surname2", phone: "+2")
+
+      let friends = try book.addGroup(title: "Friendssss")
+      let _ = try book.addGroup(title: "AllContactsss", contacts: [man1, man2])
+
+      try book.add(to: friends, contact: man1)
+    }
+
+    // THEN
+    do {
+      let book = try ContactBook()
+      XCTAssertEqual(book.groups.count, 2)
+
+      guard let friends = book.groups.values.first(where: { $0.title == "Friendssss" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let all = book.groups.values.first(where: { $0.title == "AllContactsss" }) else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      try book.changeTitle(of: friends, newTitle: "Friends")
+      try book.changeTitle(of: all, newTitle: "AllContacts")
+
+      guard let newFriends = book.groups[friends.id] else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      guard let newAll = book.groups[all.id] else {
+        throw ContactsTests.ContactError.noGroup
+      }
+
+      XCTAssertEqual(newFriends.title, "Friends")
+      XCTAssertEqual(newAll.title, "AllContacts")
+
     }
   }
 }
