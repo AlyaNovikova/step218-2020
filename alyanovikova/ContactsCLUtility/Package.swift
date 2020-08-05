@@ -14,7 +14,7 @@ let package = Package(
       dependencies: [
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
         .product(name: "Contacts", package: "Contacts"),
-    ]),
+      ]),
     .testTarget(
       name: "ContactsCLUtilityTests",
       dependencies: ["ContactsCLUtility"]),
