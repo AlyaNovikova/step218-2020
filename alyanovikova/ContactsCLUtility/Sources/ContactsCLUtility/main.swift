@@ -1,6 +1,6 @@
+import Foundation
 import ArgumentParser
 import Contacts
-import Foundation
 
 struct ContactsUtility: ParsableCommand {
 
