@@ -1,15 +1,17 @@
-import Foundation
 import ArgumentParser
 import Contacts
+import Foundation
 
 struct ContactsUtility: ParsableCommand {
 
   static let configuration = CommandConfiguration(
     abstract: "Contacts command line utility.",
-    subcommands: [AllContacts.self,
-                  AddContact.self,
-                  UpdateContact.self,
-                  RemoveContact.self])
+    subcommands: [
+      AllContacts.self,
+      AddContact.self,
+      UpdateContact.self,
+      RemoveContact.self,
+    ])
 
   struct AllContacts: ParsableCommand {
     static let configuration = CommandConfiguration(
