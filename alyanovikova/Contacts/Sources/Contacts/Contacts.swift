@@ -104,12 +104,6 @@ public class ContactBook {
     try writeToFile()
   }
 
-  public func removeContact(id: Contact.Id) throws {
-    contacts.removeValue(forKey: id)
-
-    try writeToFile()
-  }
-
   public func removeContact(_ contact: Contact) throws {
     contacts.removeValue(forKey: contact.id)
 
@@ -143,12 +137,6 @@ public class ContactBook {
 
     existGroup.add(contactId: contact.id)
     groups[group.id] = existGroup
-
-    try writeToFile()
-  }
-
-  public func removeGroup(id: Group.Id) throws {
-    groups.removeValue(forKey: id)
 
     try writeToFile()
   }

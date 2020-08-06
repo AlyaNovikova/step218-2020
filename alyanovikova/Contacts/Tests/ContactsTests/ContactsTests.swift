@@ -177,7 +177,7 @@ final class ContactsTests: XCTestCase {
       guard let alya = book.listContacts(where: { $0.name == "Alya" }).first else {
         throw ContactsTests.ContactError.noContact
       }
-      try book.removeContact(id: alya.id)
+      try book.removeContact(alya)
     }
 
     // THEN
@@ -260,7 +260,7 @@ final class ContactsTests: XCTestCase {
         throw ContactsTests.ContactError.noGroup
       }
 
-      try book.removeGroup(id: friends.id)
+      try book.removeGroup(friends)
     }
 
     do {
@@ -334,7 +334,7 @@ final class ContactsTests: XCTestCase {
       try XCTAssertEqual(book.contacts(of: all), [man1, man2])
       try XCTAssertEqual(book.contacts(of: friends), [man1])
 
-      try book.removeContact(id: man1.id)
+      try book.removeContact(man1)
 
       try XCTAssertEqual(book.contacts(of: all), [man2])
       try XCTAssertEqual(book.contacts(of: friends), [])
