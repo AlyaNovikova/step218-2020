@@ -100,7 +100,7 @@ struct ContactsUtility: ParsableCommand {
       if let phone = phone {
         contact.phone = phone
       }
-      book.contacts[uuid] = contact
+      try book.updateContact(newContact: contact)
     }
   }
 
@@ -128,8 +128,11 @@ struct ContactsUtility: ParsableCommand {
       guard let uuid = UUID(uuidString: id) else {
         return
       }
+      guard let contact = book.contacts[uuid] else {
+        return
+      }
 
-      try book.removeContact(id: uuid)
+      try book.removeContact(contact)
     }
   }
 
@@ -241,8 +244,11 @@ struct ContactsUtility: ParsableCommand {
       guard let uuid = UUID(uuidString: id) else {
         return
       }
+      guard let group = book.groups[uuid] else {
+        return
+      }
 
-      try book.removeGroup(id: uuid)
+      try book.removeGroup(group)
     }
   }
 
