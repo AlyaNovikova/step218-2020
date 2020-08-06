@@ -12,13 +12,6 @@ final class ContactsTests: XCTestCase {
     }
   }
 
-  enum ContactError: Error {
-    case noContact
-    case noGroup
-    case nonexistentIdOfContact
-    case nonexistentIdOfGroup
-  }
-
   func testInitialization() throws {
     _ = try ContactBook()
 
@@ -53,7 +46,8 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(book.contacts.count, 2)
 
     guard let contact1 = book.contacts[man1.id] else {
-      throw ContactsTests.ContactError.nonexistentIdOfContact
+      XCTFail("There is no contact with the given id")
+      return
     }
     XCTAssertEqual(contact1.id, man1.id)
     XCTAssertEqual(contact1.name, "name1")
@@ -61,7 +55,8 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact1.phone, "+1")
 
     guard let contact2 = book.contacts[man2.id] else {
-      throw ContactsTests.ContactError.nonexistentIdOfContact
+      XCTFail("There is no contact with the given id")
+      return
     }
     XCTAssertEqual(contact2.id, man2.id)
     XCTAssertEqual(contact2.name, "name2")
@@ -69,7 +64,8 @@ final class ContactsTests: XCTestCase {
     XCTAssertEqual(contact2.phone, "+2")
 
     guard let group = book.groups[group1.id] else {
-      throw ContactsTests.ContactError.nonexistentIdOfGroup
+      XCTFail("There is no group with the given id")
+      return
     }
     XCTAssertEqual(group.id, group1.id)
     XCTAssertEqual(group1.title, "group1")
@@ -89,13 +85,15 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let alya = book.listContacts(where: { $0.name == "Alya" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Alya")
+        return
       }
 
       XCTAssertEqual(book.contacts.count, 3)
 
       guard let contactAlya = book.contacts[alya.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfContact
+        XCTFail("There is no contact with the given id")
+        return
       }
 
       XCTAssertEqual(contactAlya.id, alya.id)
@@ -118,10 +116,12 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard var julia = book.listContacts(where: { $0.name == "Juliaaaaa" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Juliaaaaa")
+        return
       }
       guard var ira = book.listContacts(where: { $0.name == "Nil" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Nil")
+        return
       }
       julia.name = "Julia"
       ira.name = "Ira"
@@ -136,19 +136,23 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let julia = book.listContacts(where: { $0.name == "Julia" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Julia")
+        return
       }
       guard let ira = book.listContacts(where: { $0.name == "Ira" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Ira")
+        return
       }
 
       guard let contactJulia = book.contacts[julia.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfContact
+        XCTFail("There is no contact with the given id")
+        return
       }
       XCTAssertEqual(contactJulia.name, "Julia")
 
       guard let contactIra = book.contacts[ira.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfContact
+        XCTFail("There is no contact with the given id")
+        return
       }
       XCTAssertEqual(contactIra.name, "Ira")
 
@@ -175,7 +179,8 @@ final class ContactsTests: XCTestCase {
     do {
       let book = try ContactBook()
       guard let alya = book.listContacts(where: { $0.name == "Alya" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name Alya")
+        return
       }
       try book.removeContact(alya)
     }
@@ -214,19 +219,23 @@ final class ContactsTests: XCTestCase {
       XCTAssertEqual(book.groups.count, 2)
 
       guard let group1 = book.groups.values.first(where: { $0.title == "Friends" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title Friends")
+        return
       }
 
       guard let group2 = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title AllContacts")
+        return
       }
 
       guard let friends = book.groups[group1.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfGroup
+        XCTFail("There is no group with the given id")
+        return
       }
 
       guard let all = book.groups[group2.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfGroup
+        XCTFail("There is no group with the given id")
+        return
       }
 
       XCTAssertEqual(friends.id, group1.id)
@@ -257,7 +266,8 @@ final class ContactsTests: XCTestCase {
       let book = try ContactBook()
 
       guard let friends = book.groups.values.first(where: { $0.title == "Friends" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title Friends")
+        return
       }
 
       try book.removeGroup(friends)
@@ -267,11 +277,13 @@ final class ContactsTests: XCTestCase {
       let book = try ContactBook()
 
       guard let man = book.listContacts(where: { $0.name == "name1" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name name1")
+        return
       }
 
       guard let all = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title AllContacts")
+        return
       }
 
       try book.remove(from: all, contact: man)
@@ -285,11 +297,13 @@ final class ContactsTests: XCTestCase {
       XCTAssertNil(book.groups.values.first(where: { $0.title == "Friends" }))
 
       guard let group = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title AllContacts")
+        return
       }
 
       guard let all = book.groups[group.id] else {
-        throw ContactsTests.ContactError.nonexistentIdOfGroup
+        XCTFail("There is no group with the given id")
+        return
       }
       XCTAssertEqual(all.id, group.id)
       XCTAssertEqual(all.title, "AllContacts")
@@ -297,7 +311,7 @@ final class ContactsTests: XCTestCase {
     }
   }
 
-  func testContacts() throws {
+  func testMembersOfGroup() throws {
     // GIVEN
     do {
       let book = try ContactBook()
@@ -316,22 +330,27 @@ final class ContactsTests: XCTestCase {
       XCTAssertEqual(book.groups.count, 2)
 
       guard let friends = book.groups.values.first(where: { $0.title == "Friends" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title Friends")
+        return
       }
 
       guard let all = book.groups.values.first(where: { $0.title == "AllContacts" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with title AllContacts")
+        return
       }
 
       guard let man1 = book.listContacts(where: { $0.name == "name1" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name name1")
+        return
       }
 
       guard let man2 = book.listContacts(where: { $0.name == "name2" }).first else {
-        throw ContactsTests.ContactError.noContact
+        XCTFail("There is no contact with name name2")
+        return
       }
 
-      try XCTAssertEqual(book.contacts(of: all), [man1, man2])
+      try XCTAssertTrue(book.contacts(of: all).contains(man1))
+      try XCTAssertTrue(book.contacts(of: all).contains(man2))
       try XCTAssertEqual(book.contacts(of: friends), [man1])
 
       try book.removeContact(man1)
@@ -341,7 +360,7 @@ final class ContactsTests: XCTestCase {
     }
   }
 
-  func testChangeTitle() throws {
+  func testChangeTitleOfGroup() throws {
     // GIVEN
     do {
       let book = try ContactBook()
@@ -360,22 +379,26 @@ final class ContactsTests: XCTestCase {
       XCTAssertEqual(book.groups.count, 2)
 
       guard let friends = book.groups.values.first(where: { $0.title == "Friendssss" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("No group with title Friendssss")
+        return
       }
 
       guard let all = book.groups.values.first(where: { $0.title == "AllContactsss" }) else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("No group with title AllContactsss")
+        return
       }
 
       try book.changeTitle(of: friends, newTitle: "Friends")
       try book.changeTitle(of: all, newTitle: "AllContacts")
 
       guard let newFriends = book.groups[friends.id] else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with the given id")
+        return
       }
 
       guard let newAll = book.groups[all.id] else {
-        throw ContactsTests.ContactError.noGroup
+        XCTFail("There is no group with the given id")
+        return
       }
 
       XCTAssertEqual(newFriends.title, "Friends")

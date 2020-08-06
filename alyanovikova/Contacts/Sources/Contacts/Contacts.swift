@@ -23,9 +23,9 @@ public struct Group: Codable {
 
   public let id: Id
   public internal(set) var title: String
-  public internal(set) var contactIds: [Contact.Id]
+  public internal(set) var contactIds: Set<Contact.Id>
 
-  public init(title: String, contactIds: [Contact.Id] = []) {
+  public init(title: String, contactIds: Set<Contact.Id> = []) {
     id = Id()
 
     self.title = title
@@ -34,7 +34,7 @@ public struct Group: Codable {
 
   mutating func add(contactId: Contact.Id) {
     if !contactIds.contains(contactId) {
-      contactIds.append(contactId)
+      contactIds.insert(contactId)
     }
   }
 
@@ -57,8 +57,8 @@ struct GroupsAndContacts: Codable {
 }
 
 public class ContactBook {
-  public var contacts = [Contact.Id: Contact]()
-  public var groups = [Group.Id: Group]()
+  public internal(set) var contacts = [Contact.Id: Contact]()
+  public internal(set) var groups = [Group.Id: Group]()
 
   private let fileURL: URL
   private let logger = Logger(label: "com.google.Internship.ContactBook")
@@ -116,7 +116,7 @@ public class ContactBook {
 
   // Functions with Group
   public func addGroup(title: String, contacts: [Contact] = []) throws -> Group {
-    let newGroup = Group(title: title, contactIds: contacts.map({ $0.id }))
+    let newGroup = Group(title: title, contactIds: Set(contacts.map({ $0.id })))
     groups[newGroup.id] = newGroup
 
     try writeToFile()
